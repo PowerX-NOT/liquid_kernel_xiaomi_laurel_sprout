@@ -502,12 +502,6 @@ static long gf_compat_ioctl(struct file *filp, unsigned int cmd,
 }
 #endif /*CONFIG_COMPAT */
 
-static void notification_work(struct work_struct *work)
-{
-	pr_debug("%s unblank\n", __func__);
-	dsi_bridge_interface_enable(FP_UNLOCK_REJECTION_TIMEOUT);
-}
-
 static irqreturn_t gf_irq(int irq, void *handle)
 {
 #if defined(GF_NETLINK_ENABLE)
@@ -698,7 +692,7 @@ static int goodix_fb_state_chg_callback(struct notifier_block *nb,
 	unsigned int blank;
 	char temp[4] = { 0x0 };
 
-	if (val != MSM_DRM_EVENT_BLANK) {
+	if (val != MSM_DRM_EVENT_BLANK)
 		return 0;
 	pr_debug
 	    ("[info] %s go to the goodix_fb_state_chg_callback value = %d\n",
@@ -777,8 +771,6 @@ static int gf_probe(struct platform_device *pdev)
 	gf_dev->device_available = 0;
 	gf_dev->fb_black = 0;
 	gf_dev->wait_finger_down = false;
-
-	INIT_WORK(&gf_dev->work, notification_work);
 
 	if (gf_parse_dts(gf_dev))
 		goto error_hw;
