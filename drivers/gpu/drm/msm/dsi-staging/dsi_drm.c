@@ -14,6 +14,8 @@
 
 
 #define pr_fmt(fmt)	"dsi-drm:[%s] " fmt, __func__
+#include <linux/msm_drm_notify.h>
+
 #include <drm/drm_atomic_helper.h>
 #include <drm/drm_atomic.h>
 
@@ -172,6 +174,8 @@ static void dsi_bridge_pre_enable(struct drm_bridge *bridge)
 {
 	int rc = 0;
 	struct dsi_bridge *c_bridge = to_dsi_bridge(bridge);
+	struct msm_drm_notifier notifier_data;
+	int power_mode;
 
 	if (!bridge) {
 		pr_err("Invalid params\n");
@@ -184,6 +188,10 @@ static void dsi_bridge_pre_enable(struct drm_bridge *bridge)
 	}
 
 	atomic_set(&c_bridge->display->panel->esd_recovery_pending, 0);
+
+	power_mode = sde_connector_get_lp(c_bridge->display->drm_conn);
+	notifier_data.data = &power_mode;
+	notifier_data.id = MSM_DRM_PRIMARY_DISPLAY;
 
 	/* By this point mode should have been validated through mode_fixup */
 	rc = dsi_display_set_mode(c_bridge->display,
@@ -291,11 +299,17 @@ static void dsi_bridge_post_disable(struct drm_bridge *bridge)
 {
 	int rc = 0;
 	struct dsi_bridge *c_bridge = to_dsi_bridge(bridge);
+	struct msm_drm_notifier notifier_data;
+	int power_mode;
 
 	if (!bridge) {
 		pr_err("Invalid params\n");
 		return;
 	}
+
+	power_mode = sde_connector_get_lp(c_bridge->display->drm_conn);
+	notifier_data.data = &power_mode;
+	notifier_data.id = MSM_DRM_PRIMARY_DISPLAY;
 
 	SDE_ATRACE_BEGIN("dsi_bridge_post_disable");
 	SDE_ATRACE_BEGIN("dsi_display_disable");
@@ -316,6 +330,7 @@ static void dsi_bridge_post_disable(struct drm_bridge *bridge)
 		return;
 	}
 	SDE_ATRACE_END("dsi_bridge_post_disable");
+
 }
 
 static void dsi_bridge_mode_set(struct drm_bridge *bridge,
