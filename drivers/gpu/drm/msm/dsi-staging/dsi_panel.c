@@ -4947,10 +4947,20 @@ int dsi_panel_apply_hbm_mode(struct dsi_panel *panel)
 	int rc;
 
 	if (panel->hbm_mode >= 0 &&
-		panel->hbm_mode < ARRAY_SIZE(type_map))
+		panel->hbm_mode < ARRAY_SIZE(type_map)) {
+#ifdef CONFIG_EXPOSURE_ADJUSTMENT
+		if (ea_panel_is_enabled() && panel->hbm_mode != 0) {
+			ea_panel_mode_ctrl(panel, 0);
+			panel->resend_ea_hbm = true;
+		} else if (panel->resend_ea_hbm && panel->hbm_mode == 0) {
+			ea_panel_mode_ctrl(panel, 1);
+			panel->resend_ea_hbm = false;
+		}
+#endif
 		type = type_map[panel->hbm_mode];
-	else
-		type = DSI_CMD_SET_DISP_HBM_FOD_OFF;
+	} else {
+		type = type_map[0];
+	}
 
 	mutex_lock(&panel->panel_lock);
 	rc = dsi_panel_tx_cmd_set(panel, type);
