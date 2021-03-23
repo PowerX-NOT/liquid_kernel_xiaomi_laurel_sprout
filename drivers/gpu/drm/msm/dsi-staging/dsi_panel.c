@@ -4863,6 +4863,10 @@ int dsi_panel_enable(struct dsi_panel *panel)
 
 	mutex_lock(&panel->panel_lock);
 
+	if (is_fod_hbm_enabled || is_dimlayer_hbm_enabled) {
+    	dsi_panel_set_fod_hbm(panel, true);
+	}
+
 	rc = dsi_panel_tx_cmd_set(panel, DSI_CMD_SET_ON);
 	if (rc) {
 		pr_err("[%s] failed to send DSI_CMD_SET_ON cmds, rc=%d\n",
@@ -4873,12 +4877,6 @@ int dsi_panel_enable(struct dsi_panel *panel)
 	panel->fod_hbm_enabled = false;
 	panel->fod_backlight_flag = false;
 	panel->dimming_enabled = false;
-
-	if (is_fod_hbm_enabled || is_dimlayer_hbm_enabled) {
-    	dsi_panel_set_fod_hbm(panel, true);
-	} else {
-		dsi_panel_set_dimlayer_bl_backlight(panel, is_dimlayer_bl_enable);
-	}
 
 	mutex_unlock(&panel->panel_lock);
 	return rc;
