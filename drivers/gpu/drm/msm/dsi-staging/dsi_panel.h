@@ -177,6 +177,12 @@ struct white_point {
 	int point_y;
 };
 
+#define BRIGHTNESS_ALPHA_PAIR_LEN 2
+struct brightness_alpha_pair {
+	u16 brightness;
+	u8 alpha;
+};
+
 struct dsi_panel {
 	const char *name;
 	const char *type;
@@ -242,6 +248,9 @@ struct dsi_panel {
 	int hbm_mode;
 	bool resend_ea;
 	bool resend_ea_hbm;
+
+	struct brightness_alpha_pair *fod_dim_lut;
+	unsigned int fod_dim_lut_len;
 };
 
 static inline bool dsi_panel_ulps_feature_enabled(struct dsi_panel *panel)
