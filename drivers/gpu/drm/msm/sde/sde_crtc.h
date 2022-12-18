@@ -437,6 +437,8 @@ struct sde_crtc_state {
 	u32 padding_dummy;
 
 	struct sde_crtc_respool rp;
+
+	u8 fod_dim_alpha;
 };
 
 enum sde_crtc_irq_state {
@@ -858,5 +860,7 @@ int sde_crtc_calc_vpadding_param(struct drm_crtc_state *state,
  */
 int sde_crtc_get_num_datapath(struct drm_crtc *crtc,
 		struct drm_connector *connector);
+
+bool sde_crtc_is_fod_enabled(struct drm_crtc_state *state);
 
 #endif /* _SDE_CRTC_H_ */
