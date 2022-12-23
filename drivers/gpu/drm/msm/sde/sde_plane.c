@@ -1528,18 +1528,20 @@ static inline void _sde_plane_setup_csc_pcc(struct sde_plane *psde,
 	if (!psde->pcc_cfg)
 		return;
 
-			if (!csc_ptr) {
-				if (psde->features & BIT(SDE_SSPP_CSC_10BIT)) {
-					if (format_is_bgr(fmt->base.pixel_format))
-						csc_ptr = &sde_identity_csc10_bgr_cfg;
-					else
-						csc_ptr = &sde_identity_csc10_cfg;
-				} else if (psde->features & BIT(SDE_SSPP_CSC)) {
-					csc_ptr = &sde_identity_csc_cfg;
-				} else if (psde->features & BIT(SDE_SSPP_DGM_CSC)) {
-					csc_ptr = &sde_identity_csc_dgm_cfg;
-				}
+	if (!csc_ptr) {
+		if (psde->features & BIT(SDE_SSPP_CSC_10BIT)) {
+			if (format_is_bgr(fmt->base.pixel_format)) {
+				csc_ptr = &sde_identity_csc10_bgr_cfg;
+			} else {
+				SDE_ERROR_PLANE(psde, "format: %s\n", fmt->name);
+				csc_ptr = &sde_identity_csc10_cfg;
 			}
+		} else if (psde->features & BIT(SDE_SSPP_CSC)) {
+			csc_ptr = &sde_identity_csc_cfg;
+		} else if (psde->features & BIT(SDE_SSPP_DGM_CSC)) {
+			csc_ptr = &sde_identity_csc_dgm_cfg;
+		}
+	}
 
 	_sde_plane_mul_csc_pcc(psde, csc_ptr);
 
