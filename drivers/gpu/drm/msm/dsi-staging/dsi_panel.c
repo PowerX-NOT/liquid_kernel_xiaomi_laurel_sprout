@@ -642,6 +642,9 @@ static int dsi_panel_update_backlight(struct dsi_panel *panel,
 
 	dsi = &panel->mipi_device;
 
+	if (panel->dc_dim && bl_lvl != 0)
+	       bl_lvl = 420; // ELVSS Off Threshold
+
 	if (bl_lvl == 0) {
             rc = dsi_panel_set_dimming_brightness(panel, HBM_OFF_DIMMING_OFF, bl_lvl);
             panel->skip_dimming_on = true;
