@@ -1,4 +1,4 @@
-NAME ?= Evie-pelt
+NAME ?= Liquid-X
 
 DATE := $(shell date "+%Y%m%d-%H%M")
 
