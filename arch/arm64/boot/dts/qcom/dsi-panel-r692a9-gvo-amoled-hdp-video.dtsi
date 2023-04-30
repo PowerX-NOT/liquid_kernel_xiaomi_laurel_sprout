@@ -104,7 +104,31 @@
 			2000 0x24
 			2047 0x21
 		>;
-
+		qcom,disp-dc-dim-lut = <
+			/* brightness, alpha */
+			0	0xFF
+			2	0xF1
+			8	0xE5
+			18	0xD9
+			36	0xCB
+			58	0xBF
+			86	0xB2
+			120	0xA6
+			162	0x99
+			212	0x8B
+			264	0x7F
+			326	0x73
+			396	0x66
+			474	0x59
+			554	0x4C
+			646	0x40
+			746	0x33
+			856	0x25
+			962	0x1A
+			1088	0xC
+			1220	0x0
+		>;
+		
 		qcom,mdss-dsi-display-timings {
 			timing@0 {
 				qcom,mdss-dsi-panel-width = <720>;
