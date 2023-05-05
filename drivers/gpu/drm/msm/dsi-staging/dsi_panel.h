@@ -225,7 +225,6 @@ struct dsi_panel {
 
 	u32 last_bl_lvl;
 	u32 aod_last_bl_lvl;
-	bool fod_hbm_enabled;
 	bool fod_backlight_flag;
 	bool dimming_enabled;
 	bool skip_dimming_on;
