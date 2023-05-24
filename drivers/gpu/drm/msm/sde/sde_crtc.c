@@ -5247,17 +5247,16 @@ static int _sde_crtc_check_secure_state(struct drm_crtc *crtc,
 	return 0;
 }
 
-static struct sde_hw_dim_layer* sde_crtc_setup_fod_dim_layer(
-		struct sde_crtc_state *cstate,
-		uint32_t stage)
+static struct sde_hw_dim_layer *
+sde_crtc_setup_fod_dim_layer(struct sde_crtc_state *cstate, uint32_t stage)
 {
 	struct drm_crtc_state *crtc_state = &cstate->base;
 	struct drm_display_mode *mode = &crtc_state->adjusted_mode;
 	struct sde_hw_dim_layer *dim_layer = NULL;
 	struct dsi_display *display;
 	struct sde_kms *kms;
-	uint32_t layer_stage;
 	uint32_t alpha;
+	uint32_t layer_stage;
 
 	kms = _sde_crtc_get_kms(crtc_state->crtc);
 	if (!kms || !kms->catalog) {
@@ -5268,7 +5267,7 @@ static struct sde_hw_dim_layer* sde_crtc_setup_fod_dim_layer(
 	layer_stage = SDE_STAGE_0 + stage;
 	if (layer_stage >= kms->catalog->mixer[0].sblk->maxblendstages) {
 		SDE_ERROR("Stage too large %u vs max %u\n", layer_stage,
-			kms->catalog->mixer[0].sblk->maxblendstages);
+			  kms->catalog->mixer[0].sblk->maxblendstages);
 		goto error;
 	}
 
@@ -5284,7 +5283,7 @@ static struct sde_hw_dim_layer* sde_crtc_setup_fod_dim_layer(
 	}
 
 	mutex_lock(&display->panel->panel_lock);
-	alpha = dsi_panel_get_fod_dim_alpha(display->panel);
+	alpha = display->panel->fod_dim_alpha;
 	mutex_unlock(&display->panel->panel_lock);
 
 	dim_layer = &cstate->dim_layer[cstate->num_dim_layers];
@@ -5294,16 +5293,20 @@ static struct sde_hw_dim_layer* sde_crtc_setup_fod_dim_layer(
 	dim_layer->rect.y = 0;
 	dim_layer->rect.w = mode->hdisplay;
 	dim_layer->rect.h = mode->vdisplay;
-	dim_layer->color_fill =
-			(struct sde_mdss_color) {0, 0, 0, alpha};
+	dim_layer->color_fill.color_0 = 0;
+	dim_layer->color_fill.color_1 = 0;
+	dim_layer->color_fill.color_2 = 0;
+	dim_layer->color_fill.color_3 = alpha;
 
 error:
 	return dim_layer;
 }
 
-static void sde_crtc_fod_atomic_check(struct sde_crtc_state *cstate,
-		struct plane_state *pstates, int cnt)
+static void
+sde_crtc_fod_atomic_check(struct sde_crtc_state *cstate,
+			  struct plane_state *pstates, int cnt)
 {
+	struct sde_hw_dim_layer *fod_dim_layer;
 	uint32_t dim_layer_stage;
 	int plane_idx;
 
@@ -5312,14 +5315,19 @@ static void sde_crtc_fod_atomic_check(struct sde_crtc_state *cstate,
 			break;
 
 	if (plane_idx == cnt) {
-		cstate->fod_dim_layer = NULL;
+		fod_dim_layer = NULL;
 	} else {
 		dim_layer_stage = pstates[plane_idx].stage;
-		cstate->fod_dim_layer = sde_crtc_setup_fod_dim_layer(cstate,
-				dim_layer_stage);
+		fod_dim_layer = sde_crtc_setup_fod_dim_layer(cstate,
+							     dim_layer_stage);
 	}
 
-	if (!cstate->fod_dim_layer)
+	if (fod_dim_layer == cstate->fod_dim_layer)
+		return;
+
+	cstate->fod_dim_layer = fod_dim_layer;
+
+	if (!fod_dim_layer)
 		return;
 
 	for (plane_idx = 0; plane_idx < cnt; plane_idx++)
